@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Minolink - Free, Anonymous, and Unlimited url Shorten. Shorten urls ">
+  <meta name="keywords" content="url Shorten, free Shorten, anonymous url hosting, unlimited url Shorten, secure url sharing, url sharing service, Shorten documents, Shorten photos, Shorten urls online, url Shorten site, url storage">
+  <meta name="author" content="LykCloud Team">
+  <meta property="og:title" content="Minolink">
+  <meta property="og:description" content="Minolink - Free, Anonymous, and Unlimited url Shorten">
+  <meta property="og:image" content="/styles/Minolink.png">
+  <meta property="og:url" content="https://minolink.us.kg">
+  <meta property="og:type" content="website">
   <title>Minolink</title>
+  <link rel="shortcut icon" href="/styles/preview.png" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/styles/styles.css">
 </head>
 <body>
@@ -21,9 +32,13 @@
   <div class="container">
     <div class="input-container">
       <input type="text" id="originalUrl" placeholder="Enter your long URL">
+      <select id="domainSelector">
+        <!-- Options will be populated by JavaScript -->
+      </select>
       <button onclick="shortenUrl()">Shorten URL</button>
     </div>
   </div>
+
   <div class="features">
     <div class="card">
       <h3>Fast</h3>
@@ -53,115 +68,127 @@
   <div id="errorPopup" class="popup">
     <p id="errorMessage"></p>
   </div>
-<!----
-  <div id="footer" class="footer">
-    <p>This is the footer. You can hide it if you want!</p>
-    <button onclick="toggleFooter()">Toggle Footer</button>
-  </div>
-  
-  <div id="errorPopup" class="popup">
-    <p id="errorMessage"></p>
-  </div>
--->
-<script>
-async function shortenUrl() {
-    const originalUrl = document.getElementById('originalUrl').value;
 
-    if (!isValidUrl(originalUrl)) {
+  <script>
+    // Populate domain options when the page loads
+    async function populateDomains() {
+      try {
+        const response = await fetch('/config');
+        const config = await response.json();
+        const domainSelector = document.getElementById('domainSelector');
+
+        // Add options to the selector
+        config.domains.forEach(domain => {
+          const option = document.createElement('option');
+          option.value = domain;
+          option.textContent = domain;
+          domainSelector.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Failed to load domains:', error);
+      }
+    }
+
+    // Call populateDomains on page load
+    populateDomains();
+
+    async function shortenUrl() {
+      const originalUrl = document.getElementById('originalUrl').value;
+      const selectedDomain = document.getElementById('domainSelector').value;
+
+      if (!isValidUrl(originalUrl)) {
         displayError('Please enter a valid URL.');
         return;
-    }
+      }
 
-    const response = await fetch('/shorten', {
+      const response = await fetch('/shorten', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ originalUrl }),
+        body: JSON.stringify({ originalUrl, domain: selectedDomain }),
+      });
+
+      const data = await response.json();
+      const websiteUrl = selectedDomain;
+
+      // Log for debugging
+      console.log('Received shortUrl:', data.shortUrl);
+      console.log('Website URL:', websiteUrl);
+
+      // Correct the logic to prevent appending the domain twice
+      let fullShortUrl = data.shortUrl;
+      if (!fullShortUrl.startsWith('http')) {
+        fullShortUrl = `${websiteUrl.replace(/\/$/, '')}/${fullShortUrl.replace(/^\//, '')}`;
+      }
+
+      // Log the final short URL for debugging
+      console.log('Final Short URL:', fullShortUrl);
+
+      // Display the shortened URL in the modal
+      const modal = document.getElementById('urlModal');
+      const modalShortUrl = document.getElementById('modalShortUrl');
+      modalShortUrl.href = fullShortUrl;
+      modalShortUrl.textContent = fullShortUrl;
+      modal.dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
+      modal.style.display = "block"; // Show the modal
+    }
+    document.getElementById('originalUrl').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent the default action (form submission)
+        shortenUrl(); // Call the shortenUrl function
+      }
     });
 
-    const data = await response.json();
-    const websiteUrl = await getWebsiteUrl();
-
-    // Log for debugging
-    console.log('Received shortUrl:', data.shortUrl);
-    console.log('Website URL:', websiteUrl);
-
-    // Correct the logic to prevent appending the domain twice
-    let fullShortUrl = data.shortUrl;
-    if (!fullShortUrl.startsWith('http')) {
-        fullShortUrl = `${websiteUrl.replace(/\/$/, '')}/${fullShortUrl.replace(/^\//, '')}`;
+    function isValidUrl(url) {
+      const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+      return urlPattern.test(url);
     }
 
-    // Log the final short URL for debugging
-    console.log('Final Short URL:', fullShortUrl);
+    function copyToClipboard() {
+      const modal = document.getElementById('urlModal');
+      const fullUrl = modal.dataset.fullUrl;
 
-    // Display the shortened URL in the modal
-    const modal = document.getElementById('urlModal');
-    const modalShortUrl = document.getElementById('modalShortUrl');
-    modalShortUrl.href = fullShortUrl;
-    modalShortUrl.textContent = fullShortUrl;
-    modal.dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
-    modal.style.display = "block"; // Show the modal
-}
-
-function isValidUrl(url) {
-    const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
-    return urlPattern.test(url);
-}
-
-function copyToClipboard() {
-    const modal = document.getElementById('urlModal');
-    const fullUrl = modal.dataset.fullUrl;
-
-    if (!fullUrl) {
+      if (!fullUrl) {
         displayError('No URL to copy.');
         return;
+      }
+
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        showNotification();
+      }, () => {
+        console.error('Failed to copy the text to clipboard.');
+      });
     }
 
-    navigator.clipboard.writeText(fullUrl).then(() => {
-        showNotification();
-    }, () => {
-        console.error('Failed to copy the text to clipboard.');
-    });
-}
+    function showNotification() {
+      const notification = document.getElementById("copyNotification");
+      notification.style.display = 'block';
+      notification.style.opacity = '1';
 
-function showNotification() {
-    const notification = document.getElementById("copyNotification");
-    notification.style.display = 'block';
-    notification.style.opacity = '1';
-
-    setTimeout(() => {
+      setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => {
-            notification.style.display = 'none';
+          notification.style.display = 'none';
         }, 300);
-    }, 2000); // Show notification for 2 seconds
-}
+      }, 2000); // Show notification for 2 seconds
+    }
 
-function closeModal() {
-    document.getElementById("urlModal").style.display = "none";
-}
+    function closeModal() {
+      document.getElementById("urlModal").style.display = "none";
+    }
 
-function displayError(message) {
-    const errorPopup = document.getElementById('errorPopup');
-    const errorMessage = document.getElementById('errorMessage');
+    function displayError(message) {
+      const errorPopup = document.getElementById('errorPopup');
+      const errorMessage = document.getElementById('errorMessage');
 
-    errorMessage.innerText = message;
-    errorPopup.style.display = 'block';
+      errorMessage.innerText = message;
+      errorPopup.style.display = 'block';
 
-    setTimeout(() => {
+      setTimeout(() => {
         errorPopup.style.display = 'none';
-    }, 3000); // Hide the error popup after 3 seconds
-}
-
-async function getWebsiteUrl() {
-    const response = await fetch('/config');
-    const config = await response.json();
-    return config.website_url;
-}
-
+      }, 3000); // Hide the error popup after 3 seconds
+    }
   </script>
-  
 </body>
 </html>

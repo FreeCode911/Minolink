@@ -1,6 +1,6 @@
 {
   "name": "Minolink",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A simple URL shortener web application using Node.js, Express, MongoDB, and shortid.",
   "main": "index.js",
   "scripts": {
