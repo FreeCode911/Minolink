@@ -1,7 +1,7 @@
 {
     "mongodb_url": "mongodb+srv://admin:1@cluster0.b2gc8tg.mongodb.net/minolink-links",
     "port": 3000,
-    "domains": ["https://minolink.us.kg", "https://shotlink.me", "https://i.urlss.rf.gd", "https://i.urlss.free.nf", "https://i.got.42web.io", "https://l.suuu.000.pe"],
+    "domains": ["https://minolink.us.kg", "https://shotlink.me", "https://suu.is-a.dev", "https://i.urlss.rf.gd", "https://i.urlss.free.nf", "https://i.got.42web.io", "https://l.suuu.000.pe"],
     "NOTES": "Remove In MongoDB ( ?retryWrites=true&w=majority ) EG:- mongodb+srv://USERNAME:PASSWORD@xx/ANY_NAME",
     "NOTES": "Website Url Must Be https://example.com Do Not Add https://example.com/ , https://example.com//, etc.."
 }
