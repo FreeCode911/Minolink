@@ -83,62 +83,43 @@ async function shortenUrl() {
     const data = await response.json();
     const websiteUrl = await getWebsiteUrl();
 
-    // Ensure the domain name is not appended twice
+    // Log for debugging
+    console.log('Received shortUrl:', data.shortUrl);
+    console.log('Website URL:', websiteUrl);
+
+    // Correct the logic to prevent appending the domain twice
     let fullShortUrl = data.shortUrl;
-    if (!fullShortUrl.startsWith(websiteUrl)) {
-        fullShortUrl = `${websiteUrl}/${data.shortUrl}`;
+    if (!fullShortUrl.startsWith('http')) {
+        fullShortUrl = `${websiteUrl.replace(/\/$/, '')}/${fullShortUrl.replace(/^\//, '')}`;
     }
+
+    // Log the final short URL for debugging
+    console.log('Final Short URL:', fullShortUrl);
 
     // Display the shortened URL in the modal
     const modal = document.getElementById('urlModal');
     const modalShortUrl = document.getElementById('modalShortUrl');
     modalShortUrl.href = fullShortUrl;
     modalShortUrl.textContent = fullShortUrl;
-    document.getElementById('urlModal').dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
+    modal.dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
     modal.style.display = "block"; // Show the modal
 }
 
-
-  function isValidUrl(url) {
+function isValidUrl(url) {
     const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
     return urlPattern.test(url);
-  }
+}
 
-  function copyToClipboard() {
+function copyToClipboard() {
     const modal = document.getElementById('urlModal');
     const fullUrl = modal.dataset.fullUrl;
 
     if (!fullUrl) {
-      displayError('No URL to copy.');
-      return;
+        displayError('No URL to copy.');
+        return;
     }
 
-    const tempInput = document.createElement('input');
-    tempInput.value = fullUrl;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempInput);
-
-    alert('Copied to clipboard!');
-  }
-
-  function closeModal() {
-    document.getElementById('urlModal').style.display = "none";
-  }
-
-  async function getWebsiteUrl() {
-    const response = await fetch('/config');
-    const config = await response.json();
-    return config.website_url;
-  }
-
-  function displayError(message) {
-    alert(message);
-  }
-  function copyToClipboard() {
-    const copyText = document.getElementById("modalShortUrl").href;
-    navigator.clipboard.writeText(copyText).then(() => {
+    navigator.clipboard.writeText(fullUrl).then(() => {
         showNotification();
     }, () => {
         console.error('Failed to copy the text to clipboard.');
@@ -162,18 +143,25 @@ function closeModal() {
     document.getElementById("urlModal").style.display = "none";
 }
 
-
 function displayError(message) {
-      const errorPopup = document.getElementById('errorPopup');
-      const errorMessage = document.getElementById('errorMessage');
+    const errorPopup = document.getElementById('errorPopup');
+    const errorMessage = document.getElementById('errorMessage');
 
-      errorMessage.innerText = message;
-      errorPopup.style.display = 'block';
+    errorMessage.innerText = message;
+    errorPopup.style.display = 'block';
 
-      setTimeout(() => {
+    setTimeout(() => {
         errorPopup.style.display = 'none';
-      }, 3000); // Hide the error popup after 3 seconds
-    }
-</script>
+    }, 3000); // Hide the error popup after 3 seconds
+}
+
+async function getWebsiteUrl() {
+    const response = await fetch('/config');
+    const config = await response.json();
+    return config.website_url;
+}
+
+  </script>
+  
 </body>
 </html>
