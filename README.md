@@ -51,7 +51,7 @@ width="350px"/>
     "mongodb_url": "mongodb+srv://admin:admin@lykcloud.me/url-shortener", //Remove In MongoDB ( ?retryWrites=true&w=majority ) EG:- mongodb+srv://USERNAME:PASSWORD@xx/ANY_NAME
     "port": 3000,
     "website_url": "https://example.com", //Website Url Must Be https://example.com Do Not Add https://example.com/ , https://example.com//, etc..
-}
+   }
   
    ```
 
