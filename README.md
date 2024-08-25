@@ -63,7 +63,7 @@ width="350px"/>
    npm start
    ```
 
-2. Open your browser and visit [http://localhost:3000](http://localhost:3000).
+2. Open your browser and visit [https://your-domain.com](https://domain.com).
 
 3. Enter a long URL in the input box and click "Shorten URL."
 
