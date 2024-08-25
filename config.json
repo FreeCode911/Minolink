@@ -1,7 +1,7 @@
 {
-    "mongodb_url": "mongodb+srv://admin:admin@oreclemist-cloud.ou1xafw.mongodb.net/url-shortener",
+    "mongodb_url": "mongodb+srv://admin:1@cluster0.b2gc8tg.mongodb.net/minolink",
     "port": 3000,
-    "website_url": "https://example.com",
+    "website_url": "minolink.us.kg",
     "NOTES": "Remove In MongoDB ( ?retryWrites=true&w=majority ) EG:- mongodb+srv://USERNAME:PASSWORD@xx/ANY_NAME",
     "NOTES": "Website Url Must Be https://example.com Do Not Add https://example.com/ , https://example.com//, etc.."
 }
