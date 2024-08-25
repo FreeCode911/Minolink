@@ -64,25 +64,30 @@
   </div>
 -->
 <script>
-  async function shortenUrl() {
+async function shortenUrl() {
     const originalUrl = document.getElementById('originalUrl').value;
 
     if (!isValidUrl(originalUrl)) {
-      displayError('Please enter a valid URL.');
-      return;
+        displayError('Please enter a valid URL.');
+        return;
     }
 
     const response = await fetch('/shorten', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ originalUrl }),
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ originalUrl }),
     });
 
     const data = await response.json();
     const websiteUrl = await getWebsiteUrl();
-    const fullShortUrl = `${websiteUrl}/${data.shortUrl}`;
+
+    // Ensure the domain name is not appended twice
+    let fullShortUrl = data.shortUrl;
+    if (!fullShortUrl.startsWith(websiteUrl)) {
+        fullShortUrl = `${websiteUrl}/${data.shortUrl}`;
+    }
 
     // Display the shortened URL in the modal
     const modal = document.getElementById('urlModal');
@@ -91,7 +96,8 @@
     modalShortUrl.textContent = fullShortUrl;
     document.getElementById('urlModal').dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
     modal.style.display = "block"; // Show the modal
-  }
+}
+
 
   function isValidUrl(url) {
     const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
