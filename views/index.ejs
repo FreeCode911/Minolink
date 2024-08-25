@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minolink</title>
+  <link rel="stylesheet" href="/styles/styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><h2>Minolink</h2></li>
+    </ul>
+  </nav>
+  
+  <div class="hero">
+    <h1>Simplify Your URLs</h1>
+    <p>Shorten your long links in just a few clicks</p>
+  </div>
+
+  <div class="container">
+    <div class="input-container">
+      <input type="text" id="originalUrl" placeholder="Enter your long URL">
+      <button onclick="shortenUrl()">Shorten URL</button>
+    </div>
+  </div>
+  <div class="features">
+    <div class="card">
+      <h3>Fast</h3>
+      <p>Quickly shorten your URLs with blazing speed.</p>
+    </div>
+    <div class="card">
+      <h3>Reliable</h3>
+      <p>Your shortened links are always accessible.</p>
+    </div>
+    <div class="card">
+      <h3>Secure</h3>
+      <p>We ensure your links are safe and secure.</p>
+    </div>
+  </div>
+
+  <div id="urlModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <p id="modalText">Short URL: <a href="#" id="modalShortUrl" target="_blank"></a></p>
+      <div class="modal-buttons">
+        <button onclick="copyToClipboard()">Copy</button>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="copyNotification">Link copied to clipboard!</div>
+  <div id="errorPopup" class="popup">
+    <p id="errorMessage"></p>
+  </div>
+<!----
+  <div id="footer" class="footer">
+    <p>This is the footer. You can hide it if you want!</p>
+    <button onclick="toggleFooter()">Toggle Footer</button>
+  </div>
+  
+  <div id="errorPopup" class="popup">
+    <p id="errorMessage"></p>
+  </div>
+-->
+<script>
+  async function shortenUrl() {
+    const originalUrl = document.getElementById('originalUrl').value;
+
+    if (!isValidUrl(originalUrl)) {
+      displayError('Please enter a valid URL.');
+      return;
+    }
+
+    const response = await fetch('/shorten', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ originalUrl }),
+    });
+
+    const data = await response.json();
+    const websiteUrl = await getWebsiteUrl();
+    const fullShortUrl = `${websiteUrl}/${data.shortUrl}`;
+
+    // Display the shortened URL in the modal
+    const modal = document.getElementById('urlModal');
+    const modalShortUrl = document.getElementById('modalShortUrl');
+    modalShortUrl.href = fullShortUrl;
+    modalShortUrl.textContent = fullShortUrl;
+    document.getElementById('urlModal').dataset.fullUrl = fullShortUrl; // Store the full URL in a data attribute
+    modal.style.display = "block"; // Show the modal
+  }
+
+  function isValidUrl(url) {
+    const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+    return urlPattern.test(url);
+  }
+
+  function copyToClipboard() {
+    const modal = document.getElementById('urlModal');
+    const fullUrl = modal.dataset.fullUrl;
+
+    if (!fullUrl) {
+      displayError('No URL to copy.');
+      return;
+    }
+
+    const tempInput = document.createElement('input');
+    tempInput.value = fullUrl;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+
+    alert('Copied to clipboard!');
+  }
+
+  function closeModal() {
+    document.getElementById('urlModal').style.display = "none";
+  }
+
+  async function getWebsiteUrl() {
+    const response = await fetch('/config');
+    const config = await response.json();
+    return config.website_url;
+  }
+
+  function displayError(message) {
+    alert(message);
+  }
+  function copyToClipboard() {
+    const copyText = document.getElementById("modalShortUrl").href;
+    navigator.clipboard.writeText(copyText).then(() => {
+        showNotification();
+    }, () => {
+        console.error('Failed to copy the text to clipboard.');
+    });
+}
+
+function showNotification() {
+    const notification = document.getElementById("copyNotification");
+    notification.style.display = 'block';
+    notification.style.opacity = '1';
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 300);
+    }, 2000); // Show notification for 2 seconds
+}
+
+function closeModal() {
+    document.getElementById("urlModal").style.display = "none";
+}
+
+
+function displayError(message) {
+      const errorPopup = document.getElementById('errorPopup');
+      const errorMessage = document.getElementById('errorMessage');
+
+      errorMessage.innerText = message;
+      errorPopup.style.display = 'block';
+
+      setTimeout(() => {
+        errorPopup.style.display = 'none';
+      }, 3000); // Hide the error popup after 3 seconds
+    }
+</script>
+</body>
+</html>
